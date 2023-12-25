@@ -1,0 +1,42 @@
+os.loadAPI("guardlink/API/finance/registration_utils.lua")
+
+local companies = registration_utils.loadCompaniesFromFile()
+
+
+
+-- worth of all companies
+function calculateTotalMarketValue()
+    local totalValue = 0
+    for _, company in ipairs(companies) do
+        totalValue = totalValue + company.Evaluation
+    end
+    return totalValue
+end
+
+
+
+-- worth of a company
+function calculateCompanyWorth(salesVolume, profitMargin, consistencyFactor, innovationFactor)
+    local companyWorth = (salesVolume * profitMargin) + (consistencyFactor * innovationFactor)
+    return companyWorth
+end
+-- How consistent were the Sales? Is the company innovative? range 0-1
+
+
+
+function calculatePercentageIncrease(initialValue, finalValue)
+    return ((finalValue - initialValue) / initialValue) * 100
+end
+
+
+
+-- calculates how much a company owns of the global market
+function calculateCompanyValuePercentage(companyName)
+    local company = registration_utils.getCompanyInfo(companyName)
+    if company then
+        local totalMarketValue = calculateTotalMarketValue()
+        return (company.Evaluation / totalMarketValue) * 100
+    else
+        return 0
+    end
+end

@@ -1,0 +1,195 @@
+local diskLabel = "guardlink"
+local dataPath = "API/finance/companies.txt"
+local companies = {}  -- Table to store company data
+
+
+
+-- Function to register a new company
+function registerCompany(companyName, owner, sharesPercentage, evaluation)
+    local company = {
+        Name = companyName,
+        Owner = owner,
+        SharesPercentage = sharesPercentage,
+        Evaluation = evaluation
+    }
+
+    table.insert(companies, company)
+    saveCompaniesToFile()
+end
+-- Returns "nil"
+
+
+
+-- Function to get company information
+function getCompanyInfo(companyName)
+    for _, company in ipairs(companies) do
+        if company.Name == companyName then
+            return company.Name, company.Owner, company.SharesPercentage, company.Evaluation
+        end
+    end
+    -- Return nil if company is not found
+    return nil
+end
+-- Returns "name, owner, sharesPercentage, evaluation or nil"
+
+
+
+-- Function to load companies from file
+local function loadCompaniesFromFile()
+    if fs.exists(diskLabel.."/"..dataPath) then
+        local file = fs.open(diskLabel.."/"..dataPath, "r")
+        local content = file.readAll()
+        file.close()
+
+        -- Load the table from the file content
+        companies = textutils.unserialize(content) or {}
+    end
+end
+-- returns nil
+
+
+
+-- Function to save companies to file
+function saveCompaniesToFile()
+    local file = fs.open(diskLabel.."/"..dataPath, "w")
+    file.write(textutils.serialize(companies))
+    file.close()
+end
+-- returns nil
+
+
+
+-- Function to delete a company
+function deleteCompany(companyName)
+    for i, company in ipairs(companies) do
+        if company.Name == companyName then
+            table.remove(companies, i)
+            saveCompaniesToFile()
+            return true  -- Company deleted
+        end
+    end
+    return false  -- Company not found
+end
+-- returns nil
+
+
+
+-- Function to get all companies
+function getAllCompanies()
+    local allCompanies = {}
+    for _, company in ipairs(companies) do
+        local companyInfo = {
+            Name = company.Name,
+            Owner = company.Owner,
+            SharesPercentage = company.SharesPercentage,
+            Evaluation = company.Evaluation
+        }
+        table.insert(allCompanies, companyInfo)
+    end
+    return allCompanies
+end
+-- returns table with all companies in the file
+
+
+function updateCompany(companyName, newOwner, newSharesPercentage, newEvaluation)
+    for _, company in ipairs(companies) do
+        if company.Name == companyName then
+            company.Owner = newOwner
+            company.SharesPercentage = newSharesPercentage
+            company.Evaluation = newEvaluation
+            saveCompaniesToFile()
+            return true  -- Company updated successfully
+        end
+    end
+    return false  -- Company not found
+end
+
+
+
+function doesCompanyExist(companyName)
+    for _, company in ipairs(companies) do
+        if company.Name == companyName then
+            return true  -- Company exists
+        end
+    end
+    return false  -- Company not found
+end
+-- returns boolean
+
+
+
+function getCompanyCount()
+    return #companies
+end
+-- returns number
+
+
+
+function getAllCompanyNames()
+    local companyNames = {}
+    for _, company in ipairs(companies) do
+        table.insert(companyNames, company.Name)
+    end
+    return companyNames
+end
+
+
+
+-- Function to get the top companies based on evaluation
+function getTopCompanies(numCompanies)
+    -- Sort companies by evaluation in descending order
+    table.sort(companies, function(a, b)
+        return a.Evaluation > b.Evaluation
+    end)
+
+    -- Get the top companies based on number
+    local topCompanies = {}
+    for i = 1, math.min(numCompanies, #companies) do
+        local companyInfo = {
+            Name = companies[i].Name,
+            Owner = companies[i].Owner,
+            SharesPercentage = companies[i].SharesPercentage,
+            Evaluation = companies[i].Evaluation
+        }
+        table.insert(topCompanies, companyInfo)
+    end
+
+    return topCompanies
+end
+-- returns a table with x amount of companies with highest evaluations
+
+
+
+-- Function to get the companies with the lowest evaluation
+function getCompaniesWithMinEvaluation(numCompanies)
+    -- Sort companies by evaluation in ascending order
+    table.sort(companies, function(a, b)
+        return a.Evaluation < b.Evaluation
+    end)
+
+    -- Get the companies with the lowest evaluation based on the specified number
+    local minEvaluationCompanies = {}
+    for i = 1, math.min(numCompanies, #companies) do
+        local companyInfo = {
+            Name = companies[i].Name,
+            Owner = companies[i].Owner,
+            SharesPercentage = companies[i].SharesPercentage,
+            Evaluation = companies[i].Evaluation
+        }
+        table.insert(minEvaluationCompanies, companyInfo)
+    end
+
+    return minEvaluationCompanies
+end
+
+
+
+function getRandomCompany()
+    local randomIndex = math.random(1, #companies)
+    return companies[randomIndex]
+end
+-- returns random company
+
+
+-- Load companies from file on script initialization
+loadCompaniesFromFile()
